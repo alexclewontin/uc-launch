@@ -1,0 +1,14 @@
+#!/bin/sh
+
+case $(snapctl get default.gui) in
+    "true" | "True" | "TRUE" | "t" | "T" | "yes" | "Yes" | "YES" | "y" | "Y")
+        snapctl set default.gui="true"
+        ;;
+    "false" | "False" | "FALSE" | "f" | "F" | "no" | "No" | "NO" | "n" | "N")
+        snapctl set default.gui="false"
+        ;;
+    *)
+        echo "Error: Unsupported configuration value for default.gui. Options: true, false"
+        exit 1
+        ;;
+esac

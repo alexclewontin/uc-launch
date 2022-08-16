@@ -1,0 +1,90 @@
+name: uc-launch
+base: core22
+version: '0.2'
+summary: Sane QEMU invocations to quickly launch Ubuntu Core VMs
+description: |
+  This snap contains scripts to quickly and easily launch Ubuntu Core virtual
+  machines using QEMU and KVM.
+
+    Usage: uc-launch[.command] [--ssh-port <port number>] <ubuntu-core.img>
+
+  Commands:
+    uc-launch - the default invocation
+    uc-launch.check - Checks if KVM support is available on the host machine
+    uc-launch.no-gui - force terminal only mode, with no virtualized display
+    uc-launch.gui - force the use of a virtualized display
+
+  This invocation will only work with UC20 and beyond. Legacy UC16 and UC18
+  images are not supported.
+
+  Supported snap configuration:
+    default.gui -
+            whether or not to use a virtualized display when using the
+            default invocation. supported options: true,false (defaults to true)
+    default.ssh-host-port -
+            the default host port to be forwarded to port 22 on the created VM (defaults to 8022).
+            This can also be overridden on a per-invocation basis with the --ssh-port command line flag.
+    smp - the number of CPUs to give the created VMs (defaults to 2)
+    mem - the amount of memory to give the created VMs (defaults to 2048)
+
+grade: stable
+confinement: strict
+
+parts:
+  qemu:
+    plugin: nil
+    stage-packages:
+      - cpu-checker
+      - ovmf
+      - qemu-kvm
+      - qemu-system-gui
+    stage:
+      - -usr/share/qemu/openbios-ppc
+      - -usr/share/qemu/openbios-sparc32
+      - -usr/share/qemu/openbios-sparc64
+
+  scripts:
+    plugin: dump
+    source: ./scripts
+
+apps:
+  check:
+    command: usr/sbin/kvm-ok
+  uc-launch:
+    command: launch.sh --default-gui
+    extensions: [ gnome ]
+    plugs:
+      - desktop
+      - home
+      - kvm
+      - network-bind
+  gui:
+    command: launch.sh --gui
+    extensions: [ gnome ]
+    plugs:
+      - desktop
+      - home
+      - kvm
+      - network-bind
+  no-gui:
+    command: launch.sh --no-gui
+    plugs:
+      - home
+      - kvm
+      - network-bind
+
+layout:
+  /usr/share/qemu:
+    symlink: $SNAP/usr/share/qemu
+  /usr/share/seabios:
+    symlink: $SNAP/usr/share/seabios
+  /usr/lib/ipxe/qemu:
+    symlink: $SNAP/usr/lib/ipxe/qemu
+  /usr/lib/x86_64-linux-gnu/qemu:
+    symlink: $SNAP/usr/lib/x86_64-linux-gnu/qemu
+  /usr/share/icons:
+    bind: $SNAP/gnome-platform/usr/share/icons
+  /usr/share/fonts:
+    bind: $SNAP/gnome-platform/usr/share/fonts
+  /usr/local/share/fonts:
+    bind: $SNAP_COMMON/fonts

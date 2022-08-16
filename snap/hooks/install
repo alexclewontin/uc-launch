@@ -1,0 +1,6 @@
+#!/bin/sh
+
+snapctl set default.gui="true"
+snapctl set default.ssh-host-port=8022
+snapctl set smp=2
+snapctl set mem=2048
